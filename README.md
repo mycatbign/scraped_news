@@ -4,7 +4,7 @@
 The Animal Live Science News Scraper is a simple full stack application that scrapes news articles from the https://www.livescience.com/animals web site and allows the user to add and delete notes about each article.
 
 "Animal Live Science News Scraper Main Screen"
-![](./public/assets/images/scrapeNews.PNG)
+![](./assets/images/scrapeNews.PNG)
 
 ## Tools Used
 This simple full stack app uses the following:
