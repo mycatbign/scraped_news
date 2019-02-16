@@ -1,0 +1,44 @@
+{{!-- main handlebars --}}
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <title>Scraped News - Main Handlebars</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/app.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+
+        {{!-- display simple title --}}
+        <div class="page-header">
+            <h1 class="text-center text-primary">Animal Live Science News</h1>
+        </div>
+
+        {{!-- display button to scrape news articles --}}
+        <div align="center">
+            <br>
+            <button type="button" class="btn btn-primary" id="scrapeArticles">Scrape for More Articles</button>
+            <button type="button" class="btn btn-primary" id="scrapeHome">Home</button>
+        </div>
+
+        {{!-- display scraped articles --}}
+        <body>
+            {{{body}}}
+        </body>
+
+        {{!-- display footer --}}
+        <footer>
+            <h6 class="text-center">(c) 2019 Jeff Bond</h6>
+        </footer>
+
+    </div> {{!-- end container --}}
+
+</body>
+
+</html>

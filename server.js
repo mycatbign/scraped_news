@@ -1,79 +1,99 @@
-var express = require("express");
-var logger = require("morgan");
-var mongoose = require("mongoose");
+const express = require("express");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const exphbs = require("express-handlebars");
 
-// Our scraping tools
+// our scraping tools
 // Axios is a promised-based http library, similar to jQuery's Ajax method
-// It works on the client and on the server
-var axios = require("axios");
-var cheerio = require("cheerio");
+// it works on the client and on the server
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-// Require all models
-var db = require("./models");
+// require all models
+const db = require("./models");
 
-var PORT = 3000;
+const PORT =  process.env.PORT || 3000;
 
-// Initialize Express
-var app = express();
+// initialize Express
+const app = express();
 
-// Configure middleware
+// configure middleware
 
-// Use morgan logger for logging requests
+// use morgan logger for logging requests
 app.use(logger("dev"));
-// Parse request body as JSON
+// parse request body as JSON
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-// Make public a static folder
+// make public a static folder
 app.use(express.static("public"));
 
-// Connect to the Mongo DB
-// If deployed, use the deployed database. Otherwise use the local mongoHeadlines database
-var MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
+// set up express-handlebars
+app.set("views", "./views");
+app.engine("handlebars", exphbs({defaultLayout: "main"}));
+app.set("view engine", "handlebars");
+
+// connect to the Mongo DB
+// if deployed on heroku use the deployed database
+// if not deployed use the local mongoHeadlines database
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost/mongoHeadlines";
 mongoose.connect(MONGODB_URI);
-// mongoose.connect("mongodb://localhost/scraped_news_db", { useNewUrlParser: true });
 
 // Routes
 
-// A GET route for scraping the echoJS website
+// ============================================================================
+// set up GET route for scraping the livescience website
+// ============================================================================
+// executed when on click from app
+// creates MongoHeadlines database if it does not exist
+// adds scraped documents to articles collection in mongoHeadline database
 app.get("/scrape", function (req, res) {
-  // First, we grab the body of the html with axios
-  // JBOND axios.get("http://www.echojs.com/").then(function(response) {
+  // first, we grab the body of the html with axios
   axios.get("https://www.livescience.com/animals").then(function (response) {
-
-    // Then, we load that into cheerio and save it to $ for a shorthand selector
+    // next we load the response in to cheerio and save it to $ for a shorthand selector
+    // this will allow us to parse the HTML that has come back from livescience web site
     var $ = cheerio.load(response.data);
+    // make sure we are getting the desired HTML back
+    console.log("JBond Log Data --- HTML data coming back from cheerio load.");
     console.log(response.data);
-
-    // Now, we grab every h2 within an article tag, and do the following:
-    // JBOND $("article h2").each(function(i, element) {
+    // we grab every h2 within a line item and do the following:
     $("li h2").each(function (i, element) {
-      // Save an empty result object
+      // start by saving an empty result object
       var result = {};
-
-      // Add the text and href of every link, and save them as properties of the result object
+      // add the text and href of every link, and save them as properties of the result object
       result.title = $(this).children("a").text();
       result.link = $(this).children("a").attr("href");
+      // ======================= BELOW BEING TRIED
+      // check to see if a document with the same title already exists in the collection
+      db.Article.find({ title: result.title }, function (err, foundData) {
+        if (foundData.length == 0) {
+          /// then this article does not already exist so add it
+          // ======================= BELOW WORKS
+          // create a new Article using the `result` object built from scraping
+          db.Article.create(result)
+            .then(function (dbArticle) {
+              // view the added result in the console to make sure it is working
+              console.log("Article added to the mongo database.");
+              console.log(dbArticle);
+            })
+            .catch(function (err) {
+              // if an error occurred, log it
+              console.log("JBond Log Data --- error on .get - /scrape.");
+              console.log(err);
+            }); // end db Article create
+          // ======================= ABOVE WORKS
+        }; // end foundData.length
+      }); // end db.Article.find()
+      // ======================= ABOVE BEING TRIED
+    }); // end li .each
+  }); // end axios GET
+}); // end app GET
 
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function (dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function (err) {
-          // If an error occurred, log it
-          console.log(err);
-        });  // end db Article create
+// route for Home 
+app.get("/", function (req, res) {
+  res.render("index");
+});
 
-      });   // end li .each
-
-      // Send a message to the client
-      res.send("Scrape Complete");
-
-  });  // end axios GET
-});  // end app GET
-
-// Route for getting all Articles from the db
+// route for getting all Articles from the db
 app.get("/articles", function (req, res) {
   // Grab every document in the Articles collection
   db.Article.find({})
@@ -123,47 +143,21 @@ app.post("/articles/:id", function (req, res) {
     });
 });
 
+app.post("/delete/:id", function (req, res) {
+  // remove the note from the document in the Article collection
+  db.Article.update({ _id: req.params.id }, { $unset: { note: 1 } })
+    .then(function (data) {
+      console.log("Article - " + req.params.id + " - removed.");
+    });
+  // remove the note document from the Note collection
+  db.Note.remove({ _id: req.params.id })
+    .then(function (data) {
+      console.log("Note REMOVED!");
+      res.json(data);
+    });
+});
+
 // Start the server
 app.listen(PORT, function () {
   console.log("App running on port " + PORT + "!");
 });
-
-//JBOND PORT STUFF
-//var PORT = process.env.PORT || 8080;
-
-//HEROKU??? CREate APP
-// git push heroku master
-// heroku open   (will open your app in your browser)
-
-
-// JBOND HEROKU STUFF
-// // connection below is for both heroku and local
-// // if heroku finds environment variable on server it will execute if
-// // if not - it will execute the else portion assuming local host
-// if (process.env.JAWSDB_URL) {
-//   connection = mysql.createConnection(process.env.JAWSDB_URL);
-// } else {
-//   // JBOND local connection 
-//   connection = mysql.createConnection({
-//       host: 'localhost',          // hostname of burgers_db
-//       user: 'root',               // mysql username
-//       port: 3306,                 // mysql port if not 3306
-//       password: 'Rufus@007',     // mysql password 
-//       database: 'burgers_db'      // we are connecting to burgers_db
-//   });
-// };
-
-// // connect to the burgers_db database (use err callback function)
-// connection.connect(function (err) {
-//   if (err) {
-//       // if we encounter any error connecting then display error info and return
-//       console.error('05 error connecting to burgers_db: ' + err.stack);
-//       return;
-//   }
-//   // if we successfully connect to burgers_db then display the following
-//   console.log('05 successfully connected to burgers_db as id: ' + connection.threadId);
-// });
-// console.log("05 exit connection.js");
-
-// // export the connection for use elsewhere
-// module.exports = connection;

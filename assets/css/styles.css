@@ -1,0 +1,101 @@
+
+body {
+    background-color: #41f4bb 
+}
+
+#c1 {
+    background-color: red;
+    background: green;
+    
+}
+
+#c2 {
+    background-color:blue;
+}
+
+#c3 {
+    background-color:violet;
+}
+
+.btn {
+    margin: 5px;
+}
+
+h1 {
+    text-align: center;
+    border-radius: 15px;
+}
+
+p {
+    font-size: 150%;
+}
+
+#wrapper {
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5%;
+}
+
+#scrapedPosts {
+    display: inline-block;
+    overflow: auto;
+    width: 60%;
+    height: 700px;
+}
+
+#postNotes {
+    float: right;
+    width: 30%;
+}
+
+textarea, input {
+    display: block;
+    width: 100%;
+    background-color: #FCF5C7;
+}
+
+input {
+    height: 36px;
+    font-size: 24px;
+}
+
+textarea {
+    height: 200px;
+    font-size: 18px;
+}
+
+nav.navbar {
+  text-align: center;
+}
+
+
+
+body {
+    background-color: #41f4bb
+}
+#buttonDiv {
+    margin: 10px;
+    text-align: center;
+}
+h1 {
+    text-align: center;
+    border-radius: 15px;
+}
+li {
+    border: 2px solid black;
+    margin: 1px;
+    font-size: 120%;
+}
+p {
+    font-size: 125%;
+}
+#wrapper {
+    width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 5%;
+}
+.btn{
+    margin: 5px;
+}
